@@ -1,0 +1,383 @@
+---
+title: "Acumen Code Sample Statistical Programming in R"
+author: Carlos López
+output: html_notebook
+---
+
+
+<br>
+
+# Creating Martices
+```{r}
+#HW2 1.1
+fun1 <- function(n, miu, sd){
+   set.seed(2048);
+   matrix_ret <- 0;
+   random_dist <- rnorm( n = n, mean = miu, sd = sd);
+   if((n %% 2 == 0) & (n %% 3 != 0)){
+     
+     matrix_ret <- matrix(random_dist, nrow = 2, ncol= n/2, byrow = TRUE)
+     
+   }
+   else if((n %% 2 != 0) & (n %% 3 == 0)){
+     matrix_ret <- matrix(random_dist, ncol = 3, ncol = n/3,  byrow = FALSE)
+   }
+   #if(n %% 2 == 0 & n %% 3 == 0)
+   else{
+     matrix_ret <- matrix(random_dist, nrow = 6 , ncol = n/6, byrow = TRUE)
+   }
+   r_val = (dim(matrix_ret)[1])
+   c_val = (dim(matrix_ret)[2])
+   vector_vals <- apply(matrix_ret, MARGIN = 2, FUN = mean,  na.rm = TRUE)
+   for(i in 1:r_val){  
+     for(j in 1:c_val){ 
+       if(matrix_ret[i, j] < 0){
+         return(apply(matrix_ret, MARGIN = 2, FUN = mean,  na.rm = TRUE))
+      }
+     }
+   }
+   return(apply(matrix_ret, margin = 2, median,  na.rm = TRUE));
+}
+   
+fun1(50, 0.5, 2)
+
+```
+<hr>
+# Sorting Mean Values
+```{r}
+# HW2 Q1.2 
+
+fun2 <- function(list_in){
+  len <- length(list_in)
+  vec <- lapply(list_in, FUN = mean, na.rm = TRUE)
+  len <- length(vec)
+  for(i in 2:len){
+    val <-  vec[[i]]
+    j <- i -1
+    
+    while(j>=1 && vec[[j]] > val){
+      
+      vec[j + 1] <- vec[j]
+      j = j - 1
+      
+      
+    }
+    vec[j + 1] = val
+  }
+  
+    
+  return(vec)
+}
+
+list_ex = list(c(20, 13, 34, 2), c(2, 3), c(45, 65, 78), c(43, 98, 1, 22), c(3, 5, 10), c(13, 19, 14))
+
+fun2(list_ex)
+
+```
+<hr>
+# Plotting an Unfair Die
+```{r}
+# HW1.3 
+
+fun3 <- function(n){
+  prob <- c(0.1, 0.3, 0.2, 0.05, 0.3, 0.05)
+  vals <- c(1, 2, 3, 4, 5, 6)
+  sample_vec <- sample(vals, n, replace = TRUE, prob)
+  
+  
+  hist(sample_vec,
+       
+       xlab = "Die Number",
+       
+       ylab = "FREQUENCY",
+       
+       main = "Histogram of Unfair Die",
+       
+       breaks = seq(0, 6, 1),
+       
+       col = "orange",
+       
+       border = "black",
+      
+       xlim = c(0, 6),
+       ylim = c(0, 55)
+  )
+  
+  
+}
+
+fun3(100)
+```
+<hr>
+# Die Comparison
+```{r}
+#HW 1.4 
+
+fun4 <- function(n){
+  fun_sim <-function(v1, v2){
+    vals <- c('Die1 > Die2', 'Die1 < Die2', 'Die1 = Die2')
+    vec <- c()
+      if(v1 > v2){
+        vec <- c(vec, vals[1])
+      }
+      else if(v1 < v2){
+        vec <- c(vec, vals[2])
+      }
+      else{
+        
+        vec <- c(vec, vals[3])
+        
+      }
+      return(vec)
+    }
+  die1 <- sample(c(1,2,3,4,5,6), n, replace = TRUE, c(1/6.0, 1/6.0, 1/6.0, 1/6.0, 1/6.0, 1/6.0))
+  die2 <- sample(c(1,2,3,4,5,6), n, replace = TRUE, c(1/6.0, 1/6.0, 1/6.0, 1/6.0, 1/6.0, 1/6.0))
+  comparison <- mapply(fun_sim, die1, die2)
+  return(comparison)
+}
+
+
+fun4(30)
+```
+<br>
+<hr>
+<hr>
+<br>
+
+# Graphs and Mean Difference Analysis
+<br>
+#### The average price for stores in the US is shown below
+
+```{r}
+
+data1 <- read.csv(file = "/Users/c-lo/Desktop/STAT2102/carseats.csv", header = T)
+
+function_1 <- function(x){
+  
+  return(c(Mean = mean(x), Median = median(x)))
+  
+}
+#1
+avg_p_us <- mean(subset(data1, US == "Yes")$Price)
+avg_p_us
+```
+
+#### The average price for rural stores in the US
+```{r}
+avg_p_nonus <- mean(subset(data1, US == "No")$Price)
+avg_p_nonus
+
+```
+#### The average price of rural stores in the US
+```{r}
+avg_p_us_rural <- mean(subset(data1, US == "Yes" & Urban == "No")$Price)
+avg_p_us_rural
+```
+#### The average price of rural stores outside the US
+
+```{r}
+avg_p_nonus_rural <- mean(subset(data1, US == "No" & Urban == "No")$Price)
+avg_p_nonus_rural
+```
+#### The store with the maximum price
+```{r}
+store_max <- subset(data1, Price == max(Price))
+store_max
+```
+#### The store with the minimum price
+```{r}
+store_min <- subset(data1, Price == min(data1$Price))
+store_min
+```
+#### Shelving Quality Median
+```{r}
+#3
+shelving_med <- tapply(data1$Sales, data1$ShelveLoc, median)
+shelving_med
+```
+#### Median Sales by Shelve Quality and Location
+```{r}
+rural_urb <- c('Rural', 'Urban')
+shelving_med_urban <- tapply(data1$Sales, list(data1$ShelveLoc,rural_urb[as.factor(data1$Urban)]), median)
+shelving_med_urban
+```
+<br>
+<br>
+```{r}
+loc_stat <- c('Outside the US', 'In the US')
+propr <- table(data1$US)/nrow(data1)
+propc <- table(data1$Age)/nrow(data1)
+
+boxplot(data1$Age ~ loc_stat[as.factor(data1$US)],
+        width = prop, height= propc,
+        xlab = "Store Location",
+        ylab = "AGE",
+        main = "Ages for US and Non-US Stores",
+        col = c("darkorange", "red"),
+        border = c("dodgerblue", "black"),
+        notch = T)
+```
+<hr>
+
+```{r}
+propr <- table(data1$ShelveLoc)/nrow(data1)
+propc <- table(data1$Age)/nrow(data1)
+boxplot(data1$Age ~ data1$ShelveLoc,
+        width = propr * 0.5, height = 2.6*propc,
+        xlab = "Shelve Quality",
+        ylab = "AGE",
+        main = "Ages by Shelve Quality",
+        col = c("darkorange", "red", "blue"),
+        border = c("dodgerblue", "black", "green"), cex = 0.4,
+        notch = F)
+```
+```{r}
+
+barplot(table(data1[, c("ShelveLoc", "Urban")]),
+        
+        beside = TRUE,
+        ylab = "Frequencies",
+        
+        xlab = "Shelve Quality and Rural/Urban Status",
+        
+        main = "Disease Status vs Sex",
+        
+        col = c("blue", "orange", 'red')
+)
+legend("topleft", legend = unique(as.factor(data1$ShelveLoc)), pch = 15, cex=0.5, col = c("blue", "orange", 'red'))
+```
+
+```{r}
+fun_conv <- function(x){
+  if(x == "No"){
+    return("Rural")
+  }
+  else{
+    return("Urban")
+  }
+}
+
+data1$loc <- mapply(data1$Urban, FUN = fun_conv)
+colors <- c("green", "orange")
+
+plot(x = data1$Sales,
+     
+     y = data1$Price,
+     
+     xlab = "Sales",
+     
+     ylab = "Price",
+     
+     main = "Sales vs Price",
+     
+     col = colors[unique(as.factor(data1$loc))],
+     
+     pch = 17,
+     
+     cex  = 0.5
+)
+
+
+legend("topleft", legend = unique(as.factor(data1$loc)) , pch = 17, cex=0.5, col = colors)
+```
+
+```{r}
+
+#8
+
+par(mfrow = c(1,2))
+
+hist(data1$Price, 
+     
+     xlab = "Price",
+     ylab="Frequency",
+     main="Price Histogram",
+     breaks = seq(0, 195, 5),
+     col='blue',
+     border='black',
+     
+)
+
+
+boxplot(data1$Age ~ data1$US,
+        
+        xlab = "Store is in the US",
+        
+        ylab = "AGE",
+        main = "Ages for US and Non-US Stores",
+        col = c("darkorange", "red"),
+        border = c("dodgerblue", "black"),
+        notch = T)
+```
+
+# Hedge Fund Regression and Hypothesis Test
+
+
+# Hedge Fund Regression 
+```{r}
+library(readxl)
+hedge <- read_excel('/Users/c-lo/Desktop/metrics_int/HedgeFundMarketData.xlsx')
+
+
+hedge$ex_market_ret <- hedge$sp_tr - hedge$riskfree
+
+hedge$ex_hedge_ret <- hedge$hedge - hedge$riskfree
+
+#hedge
+```
+
+
+```{r}
+
+library(lmtest)
+library(sandwich)
+
+lm_hedge <- lm(ex_hedge_ret ~ ex_market_ret, hedge)
+lm_hedge
+summary(lm_hedge)
+```
+
+```{r}
+
+lm_hedge_s <- coeftest(lm_hedge, vcoc=vcovHC(lm_hedge, type ="HC1"))
+lm_hedge_s
+# As you see, R^2 and sigma_hat are not included in the new regression output 
+# No matter which setting is, heteroskedasticity and homoskedasticity, the R^2 and sigma_hat are the same 
+# The t-statistic values of beta_hat are different #
+unique(lm_hedge_s)
+lm_hedge_s[3]
+```
+
+# Testing the Hypothesis
+
+* H_0: the constant is truly zero at the 5% significance 
+* H_1: the constant is not truly zero at the 5% significance
+
+```{r}
+
+ lm_hedge_s[5] > 1.965
+lm_hedge_s[7] < 0.05
+CI_low <- lm_hedge_s[1] - 1.96 * lm_hedge_s[3]
+CI_high <- lm_hedge_s[1] + 1.96 * lm_hedge_s[3]
+CI <- c(CI_low, CI_high)
+CI
+```
+
+* As seen above three methods are utilized to determine with certainty that we cannot reject the null hypothesis. First, we fail to reject H_0 because the absolute value of the t-value is less than 1.96, Second, we fail to reject H_0 because the p-value is greater 0.05. Third, we fail to reject H_0 because 0 is within the 95% CI.
+
+### Performing a Robust Regression 
+
+```{r}
+
+mdl <- estimatr::lm_robust(ex_hedge_ret ~ ex_market_ret, data=hedge, se_type="HC1")
+summary(mdl)
+
+```
+
+```{r}
+0.8283 > 1.96 # t-value < 1.96 
+4.100e-01 < 0.05 # p-value > 0.05
+0 > -0.00304 & 0 < 0.007373 #95% CI
+```
+
+* As seen above three methods are utilized to determine with certainty that we cannot reject the null hypothesis even when we take heteroskedasity into account. 
